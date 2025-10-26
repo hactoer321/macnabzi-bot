@@ -1,0 +1,30 @@
+name: Fetch Live Matches
+
+on:
+  schedule:
+    - cron: "*/2 * * * *"   # Her 2 dakikada bir çalışır (gerekirse her 1 dakikaya düşürürüz)
+  workflow_dispatch:        # Manuel çalıştırmaya da izin verir
+
+jobs:
+  run-fetcher:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu indir
+        uses: actions/checkout@v3
+
+      - name: Node.js kur
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Bağımlılıkları yükle
+        run: |
+          npm install
+
+      - name: Botu çalıştır
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          node bot/fetchLive.js
