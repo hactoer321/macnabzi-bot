@@ -2,8 +2,8 @@ name: Fetch Live Matches
 
 on:
   schedule:
-    - cron: "*/2 * * * *"   # Her 2 dakikada bir çalışır (gerekirse her 1 dakikaya düşürürüz)
-  workflow_dispatch:        # Manuel çalıştırmaya da izin verir
+    - cron: "*/2 * * * *"   # Her 2 dakikada bir çalışır
+  workflow_dispatch:        # Manuel çalıştırma
 
 jobs:
   run-fetcher:
@@ -16,15 +16,25 @@ jobs:
       - name: Node.js kur
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20   # 🔥 Node.js 20'ye yükseltildi
 
       - name: Bağımlılıkları yükle
+        run: npm install
+
+      - name: Supabase değişkenlerini test et
         run: |
-          npm install
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "❌ HATA: SUPABASE_URL tanımlı değil."
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_SERVICE_KEY }}" ]; then
+            echo "❌ HATA: SUPABASE_SERVICE_KEY tanımlı değil."
+            exit 1
+          fi
+          echo "✅ Tüm environment değişkenleri tanımlı."
 
       - name: Botu çalıştır
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          node bot/fetchLive.js
+        run: node bot/fetchLive.js
